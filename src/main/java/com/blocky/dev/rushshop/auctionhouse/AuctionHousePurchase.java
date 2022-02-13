@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class AuctionHousePurchase extends GUI {
@@ -54,7 +55,6 @@ public class AuctionHousePurchase extends GUI {
         event.setCancelled(true);
         if (event.getSlot() == getConfig().getInt("buttons.CLOSE")) {
             event.getWhoClicked().closeInventory();
-            return;
         } else if (event.getSlot() == getConfig().getInt("buttons.PURCHASE")) {
             purchaseItem((Player) event.getWhoClicked());
         }
@@ -65,13 +65,28 @@ public class AuctionHousePurchase extends GUI {
         ItemStack itemStack = item.getItemStack("item");
         Economy eco = RushShop.getInstance().getEconomy();
         if (eco.getBalance(player) < price) {
-            player.sendMessage(Misc.getMessage("auction_house.command.purchase.insufficient_balance"));
+            player.sendMessage(Misc.getMessage("auction_house.command.purchase.insufficient_balance")
+                    .replace("{item_name}", itemStack.getItemMeta().getDisplayName())
+                    .replace("{price}", String.valueOf(price)));
             return;
         }
-        player.sendMessage(Misc.getMessage("auction_house.command.purchase.insufficient_balance")
-                .replace("{item_name}", itemStack.getItemMeta().getDisplayName())
-                .replace("{price}", String.valueOf(price)));
+        ConfigurationSection config = RushShop.getInstance().getConfig().getConfigurationSection("auction_house");
+        int type = config.getInt("sale_tax.type", 0);
+        double tax = config.getInt("sale_tax.value", 0);
+        double priceToReceive = price;
+        if (type == 0) {
+            priceToReceive -= tax;
+        } else if (type == 1) {
+            priceToReceive -= price * (tax / 100);
+        } else {
+            LOGGER.log(Level.SEVERE, "Invalid sale tax type: {0}", type);
+            return;
+        }
+        if (priceToReceive < 0) {
+            priceToReceive = 0;
+        }
         eco.withdrawPlayer(player, price);
+        eco.depositPlayer(Bukkit.getOfflinePlayer(UUID.fromString(item.getString("owner"))), priceToReceive);
         for (ItemStack i : player.getInventory().addItem(itemStack).values()) {
             player.getWorld().dropItem(player.getLocation(), i);
         }
