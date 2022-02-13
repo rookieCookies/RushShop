@@ -1,0 +1,26 @@
+command:
+    unknown_argument: "%key error_prefix% Unknown argument"
+    player_only: "%key error_prefix% Only players can use this command"
+    illegal_usage: "%key error_prefix% Illegal usage &a[&7{usage}&a]"
+auction_house:
+    gui:
+        display_item:
+            lore:
+            - ""
+            - "&7Owner: &a{owner}"
+            - "&7Price: &a{price}"
+            - ""
+            - "&eClick to purchase!"
+    command:
+        add:
+            success: "%key success_prefix% Added &f{item_name} &7to the auction house at the price of &6{price}"
+            no_item: "%key error_prefix% You can't auction air"
+            price_too_high: "%key error_prefix% You can't auction an item for a price higher than {max_price}"
+            price_too_low: "%key error_prefix% You can't auction an item for a price lower than {min_price}"
+            illegal_price: "%key error_prefix% Please provide a valid number for the price"
+        purchase:
+            success: "%key success_prefix% You have purchased &f{item_name} &7for &6{price}"
+            insufficient_balance: "%key error_prefix% You don't have enough money to purchase this item"
+keys:
+    error_prefix: "&7[&4&l!&7]"
+    success_prefix: "&7[&2&l!&7]"

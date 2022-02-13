@@ -1,0 +1,4 @@
+auction_house:
+    data_file: "auction_house_data"
+    max_price: 2147483648
+    min_price: 0

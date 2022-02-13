@@ -1,0 +1,11 @@
+name: RushShop
+version: '0.1'
+main: com.blocky.dev.rushshop.RushShop
+api-version: 1.18
+authors: [BlockyDev]
+depend: [Vault]
+commands:
+    auctionhouse:
+        description: Access the auction house and it's functionalities.
+        permission: rushshop.command.ah
+        aliases: [ah]

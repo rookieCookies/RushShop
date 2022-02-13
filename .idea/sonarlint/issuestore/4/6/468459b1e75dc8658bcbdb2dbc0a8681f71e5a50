@@ -1,0 +1,9 @@
+
+A
+java:S2387""&"inv" is the name of a field in "GUI".(ˆÓèøÿÿÿÿ
+h
+java:S1939"R"Listener" is implemented by a super class; there is no need to implement it here.(ñ»‹ö
+o
+java:S2250¯"SThis call to "contains()" may be a performance hot spot if the collection is large.(¶ı±ùÿÿÿÿ
+i
+java:S1142™"MReduce the number of returns of this method 9, down to the maximum allowed 5.(–¤‹¿ıÿÿÿÿ
