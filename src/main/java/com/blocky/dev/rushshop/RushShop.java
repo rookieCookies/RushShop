@@ -7,6 +7,7 @@ import net.milkbowl.vault.economy.Economy;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
+@SuppressWarnings("InstantiationOfUtilityClass")
 public final class RushShop extends JavaPlugin {
     private static RushShop instance;
     private Economy economy;

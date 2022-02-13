@@ -16,6 +16,7 @@ import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+@SuppressWarnings("ALL")
 public class GUI implements Listener {
     private static final Logger LOGGER = RushShop.getInstance().getLogger();
     private static final Map<String, ItemStack> itemsMap = new HashMap<>();

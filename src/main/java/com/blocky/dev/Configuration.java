@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+@SuppressWarnings("ALL")
 public class Configuration {
     private static final Plugin instance = RushShop.getInstance();
     private final ConfigurationSection config;

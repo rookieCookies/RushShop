@@ -11,7 +11,6 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -26,23 +25,17 @@ import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class AuctionHouseMainGUI extends GUI implements Listener {
+public class AuctionHouseMainGUI extends GUI {
 
     private static final Logger LOGGER = RushShop.getInstance().getLogger();
     private int viewSlots;
     private final List<Integer> viewSlotsList = new ArrayList<>();
-    private final Inventory inv;
     private int currentPage = 1;
     private int maxPages;
 
     AuctionHouseMainGUI(HumanEntity entity) {
         super(FileID.AUCTION_HOUSE_GUI, "menu");
         viewSlots = 0;
-        this.inv = Bukkit.createInventory(
-                null,
-                Math.min(getConfig().getInt("size", 6), 6) * 9,
-                Misc.coloured(getConfig().getString("title", "&6Auction House"))
-        );
         registerSelf();
         initializeItems();
         loadPage();

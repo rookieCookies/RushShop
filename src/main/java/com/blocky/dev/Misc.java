@@ -8,7 +8,9 @@ import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
 
 import java.util.*;
+import java.util.logging.Level;
 
+@SuppressWarnings("ALL")
 public class Misc {
     private static final Map<String, String> shortcutMessages = new HashMap<>();
     private static final ManagedFile messagesMFile = RushShop.getInstance().getFileManager().getFile(FileID.MESSAGES);
@@ -41,13 +43,13 @@ public class Misc {
     public static String getMessage(String path, boolean noKeyCode) {
         ConfigurationSection configuration = messagesMFile.getFileConfiguration();
         if (!configuration.contains(path)) {
-            RushShop.getInstance().getLogger().severe("Missing message in the language file: " + path);
+            RushShop.getInstance().getLogger().log(Level.SEVERE, "Missing message in the language file: {0}", path);
             configuration.set(path, path);
             messagesMFile.save();
             return path;
         }
         if (configuration.get(path) == null) {
-            RushShop.getInstance().getLogger().severe("Missing message in the language file: " + path);
+            RushShop.getInstance().getLogger().log(Level.SEVERE, "Missing message in the language file: {0}", path);
             configuration.set(path, path);
             messagesMFile.save();
             return path;
@@ -62,13 +64,13 @@ public class Misc {
     public static List<String> getMessageList(String path) {
         ConfigurationSection configuration = messagesMFile.getFileConfiguration();
         if (!configuration.contains(path)) {
-            RushShop.getInstance().getLogger().severe("Missing list in the language file: " + path);
+            RushShop.getInstance().getLogger().log(Level.SEVERE, "Missing list in the language file: {0}", path);
             configuration.set(path, path);
             messagesMFile.save();
             return new ArrayList<>();
         }
         if (configuration.get(path) == null) {
-            RushShop.getInstance().getLogger().severe("Missing list in the language file: " + path);
+            RushShop.getInstance().getLogger().log(Level.SEVERE, "Missing list in the language file: {0}", path);
             configuration.set(path, new ArrayList<String>());
             messagesMFile.save();
             return new ArrayList<>();
@@ -95,7 +97,7 @@ public class Misc {
             if (!(configuration.contains("keys." + key))) {
                 configuration.set("keys." + key, key);
                 messagesMFile.save();
-                RushShop.getInstance().getLogger().severe("Keycode not found: " + key);
+                RushShop.getInstance().getLogger().log(Level.SEVERE, "Keycode not found: {0}", key);
                 continue;
             }
             // Get the keycode

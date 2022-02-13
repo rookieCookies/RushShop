@@ -23,7 +23,7 @@ public class AuctionHouse {
             instance = inst;
         }
     }
-    private void setupCommands() {
+    private static void setupCommands() {
         long start = System.currentTimeMillis();
 
         registerCommand("auctionhouse", new CommandAuctionHouse());
@@ -32,7 +32,7 @@ public class AuctionHouse {
         plugin.getLogger().info(completeMessage);
     }
 
-    private void registerCommand(String name, CommandExecutor executor) {
+    private static void registerCommand(String name, CommandExecutor executor) {
         PluginCommand command = plugin.getCommand(name);
         if (command == null) {
             throw new NullPointerException("Command " + name + " is null, please contact the plugin owner!");

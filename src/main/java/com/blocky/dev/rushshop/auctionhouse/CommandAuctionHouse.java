@@ -45,9 +45,8 @@ public class CommandAuctionHouse implements CommandExecutor {
         if (!Add.canParsePrice(args, player)) {
             return;
         }
-        ConfigurationSection config = RushShop.getInstance().getConfig().getConfigurationSection("auction_house");
-        int type = config.getInt("auction_tax.type", 0);
-        double tax = config.getInt("auction_tax.value", 0);
+        int type = Config.i.getInt("auction_tax.type", 0);
+        double tax = Config.i.getInt("auction_tax.value", 0);
         Economy eco = RushShop.getInstance().getEconomy();
         double price = Add.parsePrice(args[1]);
         if (type == 0) {
@@ -99,8 +98,8 @@ public class CommandAuctionHouse implements CommandExecutor {
                 p.sendMessage(Misc.getMessage("auction_house.command.add.illegal_price"));
                 return false;
             }
-            double maxPrice = Config.getDouble("auction_house.max_price");
-            double minPrice = Config.getDouble("auction_house.min_price");
+            double maxPrice = Config.i.getDouble("auction_house.max_price");
+            double minPrice = Config.i.getDouble("auction_house.min_price");
             if (maxPrice >= 0 && price > maxPrice) {
                 p.sendMessage(Misc.getMessage("auction_house.command.add.price_too_high").replace("{max_price}", String.valueOf(maxPrice)));
                 return false;

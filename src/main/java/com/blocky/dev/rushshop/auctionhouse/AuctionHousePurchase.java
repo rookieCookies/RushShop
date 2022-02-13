@@ -1,5 +1,6 @@
 package com.blocky.dev.rushshop.auctionhouse;
 
+import com.blocky.dev.Config;
 import com.blocky.dev.Configuration;
 import com.blocky.dev.GUI;
 import com.blocky.dev.Misc;
@@ -30,11 +31,11 @@ public class AuctionHousePurchase extends GUI {
     private static final Logger LOGGER = RushShop.getInstance().getLogger();
     private final Configuration item;
 
-    public AuctionHousePurchase(HumanEntity entity, String ID) {
+    public AuctionHousePurchase(HumanEntity entity, String id) {
         super(FileID.AUCTION_HOUSE_GUI, "purchase");
         item = new Configuration(
                 Misc.getConfigurationSection(
-                        RushShop.getInstance().getFileManager().getFile(FileID.AUCTION_DATA).getFileConfiguration(), ID)
+                        RushShop.getInstance().getFileManager().getFile(FileID.AUCTION_DATA).getFileConfiguration(), id)
         );
         entity.openInventory(inv);
         registerSelf();
@@ -66,13 +67,12 @@ public class AuctionHousePurchase extends GUI {
         Economy eco = RushShop.getInstance().getEconomy();
         if (eco.getBalance(player) < price) {
             player.sendMessage(Misc.getMessage("auction_house.command.purchase.insufficient_balance")
-                    .replace("{item_name}", itemStack.getItemMeta().getDisplayName())
+                    .replace("{item_name}", itemStack.getItemMeta() != null ? itemStack.getItemMeta().getDisplayName() : itemStack.getType().name())
                     .replace("{price}", String.valueOf(price)));
             return;
         }
-        ConfigurationSection config = RushShop.getInstance().getConfig().getConfigurationSection("auction_house");
-        int type = config.getInt("sale_tax.type", 0);
-        double tax = config.getInt("sale_tax.value", 0);
+        int type = Config.i.getInt("sale_tax.type", 0);
+        double tax = Config.i.getInt("sale_tax.value", 0);
         double priceToReceive = price;
         if (type == 0) {
             priceToReceive -= tax;
