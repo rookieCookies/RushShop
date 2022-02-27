@@ -1,4 +1,4 @@
-package com.blocky.dev.rushshop.auctionhouse;
+package com.blocky.dev.rushshop.auctionhouse.gui;
 
 import com.blocky.dev.Config;
 import com.blocky.dev.Configuration;
@@ -6,6 +6,7 @@ import com.blocky.dev.GUI;
 import com.blocky.dev.Misc;
 import com.blocky.dev.filemanager.FileID;
 import com.blocky.dev.rushshop.RushShop;
+import com.blocky.dev.rushshop.auctionhouse.AuctionHouseOrdering;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -27,19 +28,19 @@ import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class AuctionHousePurchase extends GUI {
+public class AuctionHousePurchaseGUI extends GUI {
     private static final Logger LOGGER = RushShop.getInstance().getLogger();
     private final Configuration item;
 
-    public AuctionHousePurchase(HumanEntity entity, String id) {
+    public AuctionHousePurchaseGUI(HumanEntity entity, String id) {
         super(FileID.AUCTION_HOUSE_GUI, "purchase");
         item = new Configuration(
                 Misc.getConfigurationSection(
                         RushShop.getInstance().getFileManager().getFile(FileID.AUCTION_DATA).getFileConfiguration(), id)
         );
-        entity.openInventory(inv);
         registerSelf();
         initializeItems();
+        entity.openInventory(inv);
     }
     @Override
     public void initializeItems() {
@@ -54,6 +55,9 @@ public class AuctionHousePurchase extends GUI {
             return;
         }
         event.setCancelled(true);
+        if (!inv.equals(event.getClickedInventory())) {
+            return;
+        }
         if (event.getSlot() == getConfig().getInt("buttons.CLOSE")) {
             event.getWhoClicked().closeInventory();
         } else if (event.getSlot() == getConfig().getInt("buttons.PURCHASE")) {
@@ -71,8 +75,8 @@ public class AuctionHousePurchase extends GUI {
                     .replace("{price}", String.valueOf(price)));
             return;
         }
-        int type = Config.i.getInt("sale_tax.type", 0);
-        double tax = Config.i.getInt("sale_tax.value", 0);
+        int type = Config.i.getInt("auction_house.sale_tax.type", 0);
+        double tax = Config.i.getInt("auction_house.sale_tax.value", 0);
         double priceToReceive = price;
         if (type == 0) {
             priceToReceive -= tax;
@@ -91,6 +95,7 @@ public class AuctionHousePurchase extends GUI {
             player.getWorld().dropItem(player.getLocation(), i);
         }
         RushShop.getInstance().getFileManager().getFile(FileID.AUCTION_DATA).getFileConfiguration().set(Objects.requireNonNull(item.self().getCurrentPath()), null);
+        AuctionHouseOrdering.order();
 
         new AuctionHouseMainGUI(player);
     }

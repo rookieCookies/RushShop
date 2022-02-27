@@ -14,6 +14,7 @@ public class AuctionHouse {
 
         plugin.getLogger().info("Loading the AuctionHouse...");
         setupCommands();
+        AuctionHouseOrdering.order();
 
         String completeMessage = String.format("Loaded the AuctionHouse in %sms", System.currentTimeMillis() - start);
         plugin.getLogger().info(completeMessage);

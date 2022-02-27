@@ -5,6 +5,10 @@ auction_house:
     data_file: "auction_house_data"
     max_price: 2147483648
     min_price: 0
+    # The order in which the items are displayed in the auction house.
+    # 0 = The item's are sorted by their creation date, earlier coming in priority
+    # 1 = The item's are sorted by their price, cheaper coming in priority
+    order: 1
     # Type 0 = fixed price
     # Type 1 = Percentage of the item's price
     auction_tax: # The amount of money the player will pay to auction an item

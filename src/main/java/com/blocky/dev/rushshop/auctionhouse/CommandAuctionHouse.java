@@ -4,6 +4,7 @@ import com.blocky.dev.Config;
 import com.blocky.dev.Misc;
 import com.blocky.dev.filemanager.FileID;
 import com.blocky.dev.rushshop.RushShop;
+import com.blocky.dev.rushshop.auctionhouse.gui.AuctionHouseMainGUI;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
@@ -36,7 +37,7 @@ public class CommandAuctionHouse implements CommandExecutor {
         return true;
     }
 
-    private static void argAdd(Player player, String[] args) {
+    private static void argAdd(@NotNull Player player, String[] args) {
         ItemStack item = player.getInventory().getItemInMainHand();
         if (item.getItemMeta() == null || item.getType() == Material.AIR) {
             player.sendMessage(Misc.getMessage("auction_house.command.add.no_item"));
@@ -45,8 +46,8 @@ public class CommandAuctionHouse implements CommandExecutor {
         if (!Add.canParsePrice(args, player)) {
             return;
         }
-        int type = Config.i.getInt("auction_tax.type", 0);
-        double tax = Config.i.getInt("auction_tax.value", 0);
+        int type = Config.i.getInt("auction_house.auction_tax.type", 0);
+        double tax = Config.i.getInt("auction_house.auction_tax.value", 0);
         Economy eco = RushShop.getInstance().getEconomy();
         double price = Add.parsePrice(args[1]);
         if (type == 0) {
@@ -76,11 +77,12 @@ public class CommandAuctionHouse implements CommandExecutor {
         auction.set("creation_time", LocalDateTime.now().toString());
         auction.set("price", price);
         auction.set("item", item);
+        RushShop.getInstance().getFileManager().getFile(FileID.AUCTION_DATA).save();
         player.getInventory().setItemInMainHand(new ItemStack(Material.AIR));
         player.sendMessage(Misc.getMessage("auction_house.command.add.success")
                 .replace("{price}", String.valueOf(price))
                 .replace("{item_name}", item.getItemMeta().getDisplayName().isEmpty() ? item.getType().name() : item.getItemMeta().getDisplayName()));
-        RushShop.getInstance().getFileManager().getFile(FileID.AUCTION_DATA).save();
+        AuctionHouseOrdering.order();
     }
     private static class Add {
         public static double parsePrice(String priceString) {

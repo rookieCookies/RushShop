@@ -1,13 +1,14 @@
-package com.blocky.dev.rushshop.auctionhouse;
+package com.blocky.dev.rushshop.auctionhouse.gui;
 
+import com.blocky.dev.Config;
 import com.blocky.dev.Configuration;
 import com.blocky.dev.GUI;
 import com.blocky.dev.Misc;
 import com.blocky.dev.filemanager.FileID;
 import com.blocky.dev.rushshop.RushShop;
+import com.blocky.dev.rushshop.auctionhouse.AuctionHouseOrdering;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.event.EventHandler;
@@ -15,58 +16,32 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.persistence.PersistentDataContainer;
-import org.bukkit.persistence.PersistentDataType;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class AuctionHouseMainGUI extends GUI {
 
     private static final Logger LOGGER = RushShop.getInstance().getLogger();
-    private int viewSlots;
     private final List<Integer> viewSlotsList = new ArrayList<>();
+    private final Map<Integer, String> itemUUIDs = new HashMap<>();
     private int currentPage = 1;
+    private final int order;
     private int maxPages;
 
-    AuctionHouseMainGUI(HumanEntity entity) {
+    public AuctionHouseMainGUI(HumanEntity entity) {
         super(FileID.AUCTION_HOUSE_GUI, "menu");
-        viewSlots = 0;
+        this.order = Config.i.getInt("auction_house.order", 0);
         registerSelf();
         initializeItems();
         loadPage();
         entity.openInventory(inv);
     }
 
-    @Override
-    public void initializeItems() {
-        inv.clear();
-        viewSlots = 0;
-        List<String> keys = getConfig().getStringList("items");
-        for (String i : keys) {
-            if (!i.startsWith("%")) {
-                LOGGER.severe("Adding items without a slot is not supported yet, Coming soon!");
-                continue;
-            }
-            List<String> split = List.of(i.split("%"));
-            String dataString = split.get(1);
-            if (split.size() != 3) {
-                LOGGER.log(Level.SEVERE, "No Item was provided in Auction House Menu GUI at slot {0}", i);
-                continue;
-            }
-            String item = split.get(2).substring(1);
-            if (!dataString.contains("-")) {
-                setItem(item, Integer.parseInt(split.get(1)), inv);
-                continue;
-            }
-            String[] data = dataString.split("-");
-            for (int j = Integer.parseInt(data[0]); j <= Integer.parseInt(data[1]); j++) {
-                setItem(item, j, inv);
-            }
+    private void clearViewSlots() {
+        for (int i : viewSlotsList) {
+            inv.setItem(i, null);
         }
     }
     @Override
@@ -76,7 +51,6 @@ public class AuctionHouseMainGUI extends GUI {
             return;
         }
         if ("{view}".equals(itemID)) {
-            viewSlots += 1;
             viewSlotsList.add(slot);
             return;
         }
@@ -98,29 +72,40 @@ public class AuctionHouseMainGUI extends GUI {
         getItemsMap().put(itemID, itemStack);
     }
     private void loadPage() {
-        initializeItems();
+        clearViewSlots();
         Configuration dataConfig = new Configuration(RushShop.getInstance().getFileManager().getFile(FileID.AUCTION_DATA).getFileConfiguration());
-        List<String> keys = new ArrayList<>(dataConfig.getKeys());
-        int startingIndex = (currentPage - 1) * viewSlots;
-        int endIndex = currentPage * viewSlots;
-        maxPages = (int) Math.ceil((double) keys.size() / viewSlots);
-        List<String> pageKeys = keys.subList(Math.min(keys.size(), startingIndex), Math.min(keys.size(), endIndex));
-        // System.log.println keys, startingIndex, endIndex, pageKeys, maxPages, viewSlots
-        for (int i = 0; i < inv.getSize(); i++) {
-            if (inv.getItem(i) != null) {
+        int startingIndex = (currentPage - 1) * viewSlotsList.size();
+        int endIndex = currentPage * viewSlotsList.size();
+        int size = AuctionHouseOrdering.baseOrder.size();
+        maxPages = (int) Math.ceil((double) size / viewSlotsList.size());
+        List<String> pageKeys = getOrderedList(startingIndex, endIndex);
+        for (int i : viewSlotsList) {
+            if (i >= inv.getSize()) {
                 continue;
             }
             if (pageKeys.isEmpty()) {
-                inv.setItem(i, new ItemStack(Material.AIR));
-                continue;
+                return;
             }
-            inv.setItem(i, createViewItem(dataConfig.getConfiguration(pageKeys.get(0)).self()));
+            setViewItem(dataConfig.getConfiguration(pageKeys.get(0)).self(), i);
+
             pageKeys.remove(0);
         }
     }
-    private static ItemStack createViewItem(ConfigurationSection section) {
+    private List<String> getOrderedList(int start, int end) {
+        List<String> base = AuctionHouseOrdering.baseOrder;
+        return switch (order) {
+            /*
+             0 = Base Order
+             1 = Price Ascending
+             */
+            case 0 -> base.subList(Math.min(base.size(), start), Math.min(base.size(), end));
+            case 1 -> AuctionHouseOrdering.priceOrderLowToHigh.subList(Math.min(base.size(), start), Math.min(base.size(), end));
+            default -> throw new IllegalStateException("Unexpected value: " + order);
+        };
+    }
+    private void setViewItem(ConfigurationSection section, int slot) {
         if (section == null) {
-            return null;
+            return;
         }
         ItemStack baseItem = section.getItemStack("item", new ItemStack(Material.STONE));
         List<String> baseLore = Misc.getMessageList("auction_house.gui.display_item.lore");
@@ -136,11 +121,10 @@ public class AuctionHouseMainGUI extends GUI {
         ItemMeta meta = newItem.getItemMeta();
         assert meta != null;
         meta.setLore(newLore);
-        PersistentDataContainer pdc = meta.getPersistentDataContainer();
-        pdc.set(new NamespacedKey(RushShop.getInstance(), "auction_id"), PersistentDataType.STRING, section.getName());
         newItem.setItemMeta(meta);
         newItem.setAmount(baseItem.getAmount());
-        return newItem;
+        inv.setItem(slot, newItem);
+        itemUUIDs.put(slot, section.getName());
     }
     @EventHandler
     public void event(InventoryClickEvent event){
@@ -148,6 +132,9 @@ public class AuctionHouseMainGUI extends GUI {
             return;
         }
         event.setCancelled(true);
+        if (!inv.equals(event.getClickedInventory())) {
+            return;
+        }
         if (event.getSlot() == getConfig().getInt("buttons.CLOSE")) {
             event.getWhoClicked().closeInventory();
             return;
@@ -172,13 +159,7 @@ public class AuctionHouseMainGUI extends GUI {
         if (item == null || item.getType() == Material.AIR) {
             return;
         }
-        ItemMeta meta = item.getItemMeta();
-        assert meta != null;
-        PersistentDataContainer pdc = meta.getPersistentDataContainer();
-        if (!pdc.has(new NamespacedKey(RushShop.getInstance(), "auction_id"), PersistentDataType.STRING)) {
-            return;
-        }
-        String auctionID = pdc.get(new NamespacedKey(RushShop.getInstance(), "auction_id"), PersistentDataType.STRING);
-        new AuctionHousePurchase(event.getWhoClicked(), auctionID);
+        String auctionID = itemUUIDs.get(event.getSlot());
+        new AuctionHousePurchaseGUI(event.getWhoClicked(), auctionID);
     }
 }
