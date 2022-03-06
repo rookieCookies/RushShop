@@ -4,15 +4,13 @@ import com.blocky.dev.filemanager.FileID;
 import com.blocky.dev.rushshop.RushShop;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.event.Listener;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -92,6 +90,35 @@ public class GUI implements Listener {
         itemStack.setItemMeta(meta);
         inv.setItem(slot, itemStack);
         itemsMap.put(itemID, itemStack);
+    }
+    public ItemStack getCustomItem(String itemID, Map<String, String> customValues){
+        ConfigurationSection section = getConfig().getConfiguration(itemID).self();
+        if (section == null) {
+            return null;
+        }
+        List<String> baseLore = section.getStringList("lore");
+        List<String> newLore = new ArrayList<>();
+        for (String s : baseLore) {
+            for (Map.Entry<String, String> entry : customValues.entrySet()) {
+                s = s.replace(entry.getKey(), entry.getValue());
+            }
+            newLore.add(s);
+        }
+        ItemStack newItem = new ItemStack(Material.valueOf(section.getString("material", "STONE")), 1);
+        ItemMeta meta = newItem.getItemMeta();
+        assert meta != null;
+        meta.setLore(newLore);
+        meta.setDisplayName(section.getString("name"));
+        newItem.setItemMeta(meta);
+        newItem.setAmount(section.getInt("amount", 1));
+        return newItem;
+    }
+    public boolean isThisButton(String buttonID, int slot) {
+        Configuration section = getConfig().getConfiguration("buttons");
+        if (section.self().isInt(buttonID)) {
+            return section.getInt(buttonID) == slot;
+        }
+        return section.getStringList(buttonID).contains(String.valueOf(slot));
     }
 
     public Configuration getConfig() {

@@ -26,6 +26,16 @@ public class AuctionHouseOrdering {
         List<String> keys = new ArrayList<>(baseOrder);
         keys.sort(new MoneyCompactor());
         priceOrderLowToHigh = keys;
+        priceOrderHighToLow = reverseList(keys);
+    }
+    private static List<String> reverseList(List<String> list) {
+        String[] array = list.toArray(new String[0]);
+        for (int i = 0; i < array.length / 2; i++) {
+            String tmp = array[i];
+            array[i] = array[array.length - 1 - i];
+            array[array.length - 1 - i] = tmp;
+        }
+        return new ArrayList<>(List.of(array));
     }
 }
 class MoneyCompactor implements Comparator<String> {

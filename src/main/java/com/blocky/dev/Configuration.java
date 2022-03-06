@@ -20,7 +20,17 @@ public class Configuration {
     public Configuration(ConfigurationSection config) {
         this.config = config;
     }
-    
+
+    public Object get(String path) {
+        return get(path, null);
+    }
+    public Object get(String path, Object defaultValue) {
+        if (config.contains(path)) {
+            return config.get(path);
+        }
+        invalid(path);
+        return defaultValue;
+    }
     public long getLong(String path) {
         return getLong(path, 0);
     }
@@ -67,6 +77,16 @@ public class Configuration {
         invalid(path);
         return defaultValue;
     }
+    public boolean getBoolean(String path) {
+        return getBoolean(path, false);
+    }
+    public boolean getBoolean(String path, boolean defaultValue) {
+        if (config.contains(path)) {
+            return config.getBoolean(path);
+        }
+        invalid(path);
+        return defaultValue;
+    }
     public List<String> getStringList(String path) {
         return getStringList(path, new ArrayList<>());
     }
@@ -108,7 +128,7 @@ public class Configuration {
         if (!log) {
             return;
         }
-        String message = String.format("There is a missing value (%s)", path.replace(".", " > "));
+        String message = String.format("There is a missing value (%s > %s)", self().getCurrentPath().replace(".", " > "), path.replace(".", " > "));
         instance.getLogger().warning(message);
     }
 }

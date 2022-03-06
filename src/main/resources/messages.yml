@@ -3,14 +3,6 @@ command:
     player_only: "%key error_prefix% Only players can use this command"
     illegal_usage: "%key error_prefix% Illegal usage &a[&7{usage}&a]"
 auction_house:
-    gui:
-        display_item:
-            lore:
-            - ""
-            - "&7Owner: &a{owner}"
-            - "&7Price: &a{price}"
-            - ""
-            - "&eClick to purchase!"
     command:
         add:
             success: "%key success_prefix% Added &f{item_name} &7to the auction house at the price of &6{price}"

@@ -10,7 +10,6 @@ import com.blocky.dev.rushshop.auctionhouse.AuctionHouseOrdering;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
@@ -18,8 +17,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.persistence.PersistentDataContainer;
-import org.bukkit.persistence.PersistentDataType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,8 +43,7 @@ public class AuctionHousePurchaseGUI extends GUI {
     public void initializeItems() {
         super.initializeItems();
         int itemSlot = getConfig().getInt("buttons.ITEM");
-        ItemStack displayItem = createViewItem(item.self());
-        inv.setItem(itemSlot, displayItem);
+        setViewItem(item.self(), itemSlot);
     }
     @EventHandler
     public void event(InventoryClickEvent event){
@@ -99,13 +95,14 @@ public class AuctionHousePurchaseGUI extends GUI {
 
         new AuctionHouseMainGUI(player);
     }
-    private static ItemStack createViewItem(ConfigurationSection section) {
+    private void setViewItem(ConfigurationSection section, int slot) {
         if (section == null) {
-            return null;
+            return;
         }
         ItemStack baseItem = section.getItemStack("item", new ItemStack(Material.STONE));
-        List<String> baseLore = Misc.getMessageList("auction_house.gui.display_item.lore");
-        List<String> newLore = new ArrayList<>();
+        List<String> baseLore = Misc.colouredList(getConfig().getStringList("gui_items.display_item.lore"));
+        List<String> newLore = baseItem.getItemMeta() != null && baseItem.getItemMeta().getLore() != null ? baseItem.getItemMeta().getLore() : new ArrayList<>();
+        assert newLore != null;
         for (String s : baseLore) {
             newLore.add(s
                     .replace("{owner}", Objects.requireNonNull(Bukkit.getPlayer(UUID.fromString(section.getString("owner", "")))).getDisplayName())
@@ -117,10 +114,10 @@ public class AuctionHousePurchaseGUI extends GUI {
         ItemMeta meta = newItem.getItemMeta();
         assert meta != null;
         meta.setLore(newLore);
-        PersistentDataContainer pdc = meta.getPersistentDataContainer();
-        pdc.set(new NamespacedKey(RushShop.getInstance(), "auction_id"), PersistentDataType.STRING, section.getName());
+        meta.setDisplayName(getConfig().getString("gui_items.display_item.name")
+                .replace("{default_name}", baseItem.getItemMeta() != null ? baseItem.getItemMeta().getDisplayName() : baseItem.getType().name()));
         newItem.setItemMeta(meta);
         newItem.setAmount(baseItem.getAmount());
-        return newItem;
+        inv.setItem(slot, newItem);
     }
 }

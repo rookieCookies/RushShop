@@ -87,29 +87,41 @@ public class AuctionHouseMainGUI extends GUI {
                 return;
             }
             setViewItem(dataConfig.getConfiguration(pageKeys.get(0)).self(), i);
-
             pageKeys.remove(0);
+        }
+        new LoadPage().disablePageButtons();
+    }
+    class LoadPage {
+        public void disablePageButtons() {
+            if (currentPage == maxPages && getConfig().getBoolean("page_buttons.next_page.disable_if_not_available")) {
+                setItem(getConfig().getString("page_buttons.next_page.disabled_item"), getConfig().getInt("buttons.NEXT_PAGE"), getInv());
+            } else {
+                setItem(getConfig().getString("page_buttons.next_page.active_item"), getConfig().getInt("buttons.NEXT_PAGE"), getInv());
+            }
+            if (currentPage == 1 && getConfig().getBoolean("page_buttons.previous_page.disable_if_not_available")) {
+                setItem(getConfig().getString("page_buttons.previous_page.disabled_item"), getConfig().getInt("buttons.PREVIOUS_PAGE"), getInv());
+            } else {
+                setItem(getConfig().getString("page_buttons.previous_page.active_item"), getConfig().getInt("buttons.PREVIOUS_PAGE"), getInv());
+            }
         }
     }
     private List<String> getOrderedList(int start, int end) {
         List<String> base = AuctionHouseOrdering.baseOrder;
-        return switch (order) {
-            /*
-             0 = Base Order
-             1 = Price Ascending
-             */
+        return new ArrayList<>(switch (order) {
             case 0 -> base.subList(Math.min(base.size(), start), Math.min(base.size(), end));
             case 1 -> AuctionHouseOrdering.priceOrderLowToHigh.subList(Math.min(base.size(), start), Math.min(base.size(), end));
+            case 2 -> AuctionHouseOrdering.priceOrderHighToLow.subList(Math.min(base.size(), start), Math.min(base.size(), end));
             default -> throw new IllegalStateException("Unexpected value: " + order);
-        };
+        });
     }
     private void setViewItem(ConfigurationSection section, int slot) {
         if (section == null) {
             return;
         }
         ItemStack baseItem = section.getItemStack("item", new ItemStack(Material.STONE));
-        List<String> baseLore = Misc.getMessageList("auction_house.gui.display_item.lore");
-        List<String> newLore = new ArrayList<>();
+        List<String> baseLore = Misc.colouredList(getConfig().getStringList("gui_items.display_item.lore"));
+        List<String> newLore = baseItem.getItemMeta() != null && baseItem.getItemMeta().getLore() != null ? baseItem.getItemMeta().getLore() : new ArrayList<>();
+        assert newLore != null;
         for (String s : baseLore) {
             newLore.add(s
                     .replace("{owner}", Objects.requireNonNull(Bukkit.getPlayer(UUID.fromString(section.getString("owner", "")))).getDisplayName())
@@ -121,11 +133,18 @@ public class AuctionHouseMainGUI extends GUI {
         ItemMeta meta = newItem.getItemMeta();
         assert meta != null;
         meta.setLore(newLore);
+        meta.setDisplayName(getConfig().getString("gui_items.display_item.name")
+                .replace("{default_name}", baseItem.getItemMeta() != null ? baseItem.getItemMeta().getDisplayName() : baseItem.getType().name()));
         newItem.setItemMeta(meta);
         newItem.setAmount(baseItem.getAmount());
         inv.setItem(slot, newItem);
         itemUUIDs.put(slot, section.getName());
     }
+//    private void setSwitchItem() {
+//        int itemSlot = getConfig().getInt("buttons.SWITCH_ORDER");
+//        inv.setItem(itemSlot, getCustomItem("switch_order", new HashMap<>()));
+//    }
+
     @EventHandler
     public void event(InventoryClickEvent event){
         if (!inv.equals(event.getInventory())) {

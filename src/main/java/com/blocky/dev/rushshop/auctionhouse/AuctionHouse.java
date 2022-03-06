@@ -40,7 +40,6 @@ public class AuctionHouse {
         }
         command.setExecutor(executor);
     }
-
     public static AuctionHouse getInstance() {
         return instance;
     }

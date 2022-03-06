@@ -1,10 +1,30 @@
 menu:
     size: 6
     title: "&6Auction House"
+    page_buttons:
+        # This option will replace the page button with the given
+        # disabled item than the current page.
+        next_page:
+            disable_if_not_available: true
+            disabled_item: background
+            active_item: next_page_button
+        previous_page:
+            disable_if_not_available: true
+            disabled_item: background
+            active_item: prev_page_button
     buttons:
         CLOSE: 49
         NEXT_PAGE: 53
         PREVIOUS_PAGE: 45
+    gui_items:
+        display_item:
+            name: "{default_name}"
+            lore:
+            - ""
+            - "&7Owner: &a{owner}"
+            - "&7Price: &a{price}"
+            - ""
+            - "&eClick to purchase!"
     items:
     - "%0-9% background"
     - "%10-16% {view}"
@@ -16,8 +36,6 @@ menu:
     - "%37-43% {view}"
     - "%44-53% background"
     - "%49% close_button"
-    - "%53% next_page_button"
-    - "%45% prev_page_button"
 purchase:
     size: 6
     title: "&6Purchase Item"
@@ -25,6 +43,14 @@ purchase:
         CLOSE: 49
         ITEM: 13
         PURCHASE: 31
+    gui_items:
+        display_item:
+            name: "{default_name}"
+            lore:
+            - ""
+            - "&7Owner: &a{owner}"
+            - "&7Price: &a{price}"
+            - ""
     items:
     - "%0-9% background"
     - "%10-16% inside"
